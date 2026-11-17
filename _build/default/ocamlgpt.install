@@ -1,0 +1,11 @@
+lib: [
+  "_build/install/default/lib/ocamlgpt/META"
+  "_build/install/default/lib/ocamlgpt/dune-package"
+  "_build/install/default/lib/ocamlgpt/opam"
+]
+bin: [
+  "_build/install/default/bin/ocamlgpt"
+]
+doc: [
+  "_build/install/default/doc/ocamlgpt/README.md"
+]
