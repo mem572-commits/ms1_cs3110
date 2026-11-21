@@ -1,0 +1,4 @@
+(lang dune 3.24)
+(name ocamlgpt)
+(sections (lib .) (bin ../../bin) (doc ../../doc/ocamlgpt))
+(files (lib (META dune-package opam)) (bin (ocamlgpt)) (doc (README.md)))
