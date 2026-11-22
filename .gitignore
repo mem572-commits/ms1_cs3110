@@ -1,0 +1,15 @@
+# Dune build output
+_build/
+*.install
+
+# Local OPAM switch
+_opam/
+
+# Bisect coverage output
+_coverage/
+bisect*.coverage
+
+# Editor and OS files
+.merlin
+.DS_Store
+*.swp
