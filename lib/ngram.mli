@@ -1,6 +1,6 @@
 (** A character-level n-gram language model 
 
-    The model predicts the next id from the [context] ids before it, using how ofter each id followed that context in the training text. Ids come from the corpus's {!Vocab.t}, so they match {!Neural}'s ids. *)
+    The model predicts the next id from the [context] ids before it, using how offer each id followed that context in the training text. Ids come from the corpus's {!Vocab.t}, so they match {!Neural}'s ids. *)
 
 type t
 (** A fitted model with a fixed vocabulary size and context length.
@@ -56,5 +56,5 @@ val generate :
 
     - [average_loss : t -> Corpus.example list -> float], the mean of
       [-. log p.(target)], to compare with {!Neural.average_loss}.
-    - Smoothing or backoff for unseen contexts.
+    - interpolation for unseen contexts.
     - A temperature setting for sampling. *)

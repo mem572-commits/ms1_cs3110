@@ -78,7 +78,7 @@ let sample_next m st ctx =
 let generate m st ~prompt ~length = 
     if Array.length prompt < m.context then 
         invalid_arg
-            (Printf.sprintf "Ngram.generate: prompt length must be atleast the context length %d."
+            (Printf.sprintf "Ngram.generate: prompt length must be at least the context length %d."
             m.context )
     else if length < 0 then
         invalid_arg
