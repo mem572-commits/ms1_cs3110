@@ -1,5 +1,5 @@
 (tests
- (names test_ocamlgpt test_neural)
+ (names test_ocamlgpt test_neural test_ngram)
  (libraries ocamlgpt ounit2 qcheck-core qcheck-ounit)
  (deps
   (glob_files fixtures/*)))

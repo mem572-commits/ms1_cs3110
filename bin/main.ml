@@ -1,6 +1,6 @@
 (* Placeholder entry point that shows the text-processing layer working end to
-   end. The real command-line interface (model choice, generation settings)
-   will replace this; see docs/TEXT_PROCESSING.md for the API it builds on. *)
+   end. The real command-line interface (model choice, generation settings) will
+   replace this; see docs/TEXT_PROCESSING.md for the API it builds on. *)
 
 open Ocamlgpt
 
@@ -26,7 +26,8 @@ let () =
       match int_of_string_opt n with
       | Some context -> run path context
       | None ->
-          prerr_endline ("Error: context length must be a whole number, got " ^ n);
+          prerr_endline
+            ("Error: context length must be a whole number, got " ^ n);
           exit 2)
   | _ ->
       prerr_endline usage;

@@ -24,8 +24,8 @@ let error_to_string = function
   | Invalid_context_length n ->
       Printf.sprintf "Context length must be 0 or more, but got %d." n
   | Invalid_ratio r ->
-      Printf.sprintf "Train ratio must be between 0 and 1 (exclusive), but got %g."
-        r
+      Printf.sprintf
+        "Train ratio must be between 0 and 1 (exclusive), but got %g." r
   | Unknown_chars cs ->
       Printf.sprintf "These characters never appear in the training text: %s"
         (String.concat " " (List.map Vocab.display_char cs))
@@ -67,12 +67,11 @@ let read_file path =
 
 (* ---------- Corpora ---------- *)
 
-(* AF: [{ text; vocab; ids }] is the training text [text], encoded with
-   [vocab].
+(* AF: [{ text; vocab; ids }] is the training text [text], encoded with [vocab].
 
-   RI: [text <> ""]. Every character of [text] is in [vocab].
-   [ids = Vocab.encode vocab text]. [ids] is never shared outside this
-   module, so it cannot be mutated. *)
+   RI: [text <> ""]. Every character of [text] is in [vocab]. [ids =
+   Vocab.encode vocab text]. [ids] is never shared outside this module, so it
+   cannot be mutated. *)
 type t = {
   text : string;
   vocab : Vocab.t;
@@ -117,7 +116,8 @@ let split c ~train_ratio =
   else
     let n = length c in
     let n_train = int_of_float (Float.of_int n *. train_ratio) in
-    if n_train < 1 || n_train >= n then Error (Too_short { length = n; required = 2 })
+    if n_train < 1 || n_train >= n then
+      Error (Too_short { length = n; required = 2 })
     else Ok (sub c 0 n_train, sub c n_train (n - n_train))
 
 let summary c =

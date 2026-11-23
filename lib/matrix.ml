@@ -19,7 +19,8 @@ let random st r c ~scale =
 
 let one_hot n i =
   if i < 0 || i >= n then
-    invalid_arg (Printf.sprintf "Matrix.one_hot: index %d is not in 0..%d" i (n - 1));
+    invalid_arg
+      (Printf.sprintf "Matrix.one_hot: index %d is not in 0..%d" i (n - 1));
   let v = Array.make n 0. in
   v.(i) <- 1.;
   v
@@ -54,14 +55,16 @@ let add_vec u v =
 let mat_vec m v =
   if cols m <> Array.length v then
     invalid_arg
-      (Printf.sprintf "Matrix.mat_vec: matrix has %d columns but vector has length %d"
+      (Printf.sprintf
+         "Matrix.mat_vec: matrix has %d columns but vector has length %d"
          (cols m) (Array.length v));
   Array.map (fun row -> dot row v) m
 
 let mat_mul a b =
   if cols a <> rows b then
     invalid_arg
-      (Printf.sprintf "Matrix.mat_mul: %d columns times %d rows" (cols a) (rows b));
+      (Printf.sprintf "Matrix.mat_mul: %d columns times %d rows" (cols a)
+         (rows b));
   let n = cols a in
   Array.init (rows a) (fun i ->
       Array.init (cols b) (fun j ->

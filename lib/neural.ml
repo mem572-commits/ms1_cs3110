@@ -1,6 +1,6 @@
 (* AF: [{ context; vocab_size; weights; bias }] is the model that predicts
-   [softmax (weights * x + bias)], where [x] is the one-hot encoding of the
-   last [context] ids, joined end to end.
+   [softmax (weights * x + bias)], where [x] is the one-hot encoding of the last
+   [context] ids, joined end to end.
 
    RI: [vocab_size >= 1] and [context >= 0]. [weights] has [vocab_size] rows,
    each of length [context * vocab_size]. [bias] has length [vocab_size].
@@ -15,7 +15,8 @@ type t = {
 (* ---------- Construction ---------- *)
 
 let create ~vocab_size ~context ~seed =
-  if vocab_size < 1 then invalid_arg "Neural.create: vocab_size must be at least 1";
+  if vocab_size < 1 then
+    invalid_arg "Neural.create: vocab_size must be at least 1";
   if context < 0 then invalid_arg "Neural.create: context must be 0 or more";
   let st = Random.State.make [| seed |] in
   {
@@ -35,7 +36,12 @@ let of_params ~context ~weights ~bias =
   then
     invalid_arg
       (Printf.sprintf "Neural.of_params: weights must be %d x %d" v (context * v));
-  { context; vocab_size = v; weights = Matrix.copy weights; bias = Array.copy bias }
+  {
+    context;
+    vocab_size = v;
+    weights = Matrix.copy weights;
+    bias = Array.copy bias;
+  }
 
 (* ---------- Queries ---------- *)
 
@@ -49,12 +55,14 @@ let bias m = Array.copy m.bias
 let check_id name m id =
   if id < 0 || id >= m.vocab_size then
     invalid_arg
-      (Printf.sprintf "Neural.%s: id %d is not in 0..%d" name id (m.vocab_size - 1))
+      (Printf.sprintf "Neural.%s: id %d is not in 0..%d" name id
+         (m.vocab_size - 1))
 
 let input_of_context m ctx =
   if Array.length ctx <> m.context then
     invalid_arg
-      (Printf.sprintf "Neural.input_of_context: context has length %d, expected %d"
+      (Printf.sprintf
+         "Neural.input_of_context: context has length %d, expected %d"
          (Array.length ctx) m.context);
   let x = Array.make (m.context * m.vocab_size) 0. in
   Array.iteri
@@ -64,7 +72,9 @@ let input_of_context m ctx =
     ctx;
   x
 
-let probs_of_input m x = Matrix.softmax (Matrix.add_vec (Matrix.mat_vec m.weights x) m.bias)
+let probs_of_input m x =
+  Matrix.softmax (Matrix.add_vec (Matrix.mat_vec m.weights x) m.bias)
+
 let predict m ctx = probs_of_input m (input_of_context m ctx)
 
 let example_loss m { Corpus.context; target } =
@@ -76,15 +86,17 @@ let average_loss m exs =
   match exs with
   | [] -> invalid_arg "Neural.average_loss: no examples"
   | _ ->
-      let total = List.fold_left (fun acc ex -> acc +. example_loss m ex) 0. exs in
+      let total =
+        List.fold_left (fun acc ex -> acc +. example_loss m ex) 0. exs
+      in
       total /. Float.of_int (List.length exs)
 
 (* ---------- Training ---------- *)
 
-(* For the loss [-. log p.(target)] with [p = softmax (W x + b)], the
-   gradient of the score for id [j] is [p.(j) - 1] if [j = target] and
-   [p.(j)] otherwise. The gradient of [W.(j).(k)] is that times [x.(k)],
-   and the gradient of [b.(j)] is that alone. *)
+(* For the loss [-. log p.(target)] with [p = softmax (W x + b)], the gradient
+   of the score for id [j] is [p.(j) - 1] if [j = target] and [p.(j)] otherwise.
+   The gradient of [W.(j).(k)] is that times [x.(k)], and the gradient of
+   [b.(j)] is that alone. *)
 let train_step m ~learning_rate { Corpus.context; target } =
   let x = input_of_context m context in
   check_id "train_step" m target;
@@ -108,8 +120,8 @@ let train m ~learning_rate ~epochs exs =
 (* ---------- Generation ---------- *)
 
 (* Walk through the probabilities until their running total passes a random
-   number in [0, 1). If rounding leaves the total just below the number,
-   the last id is chosen. *)
+   number in [0, 1). If rounding leaves the total just below the number, the
+   last id is chosen. *)
 let sample_next m st ctx =
   let p = predict m ctx in
   let r = Random.State.float st 1. in
@@ -126,7 +138,8 @@ let generate m st ~prompt ~length =
   let n = Array.length prompt in
   if n < m.context then
     invalid_arg
-      (Printf.sprintf "Neural.generate: prompt has %d ids but the context needs %d" n
+      (Printf.sprintf
+         "Neural.generate: prompt has %d ids but the context needs %d" n
          m.context);
   Array.iter (check_id "generate" m) prompt;
   let ids = Array.append prompt (Array.make length 0) in
