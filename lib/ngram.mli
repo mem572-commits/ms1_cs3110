@@ -1,4 +1,4 @@
-(** A character-level n-gram language model *)
+(** A character-level n-gram language model 
 
     The model predicts the next id from the [context] ids before it, using how ofter each id followed that context in the training text. Ids come from the corpus's {!Vocab.t}, so they match {!Neural}'s ids. *)
 
@@ -34,7 +34,7 @@ val predict : t -> int array -> Matrix.vec
 (** [predict m ctx] is the probability of each possible next id after
     [ctx]: an array of length [vocab_size m] whose entries are in [0, 1]
     and sum to 1.
-    TODO: say what happens when [ctx] never appeared in training.
+    If [ctx] never appeared in training, every id has probability [1 /. float (vocab_size m)]. 
     Raises [Invalid_argument] if [Array.length ctx <> context_length m]. *)
 
 (** {1 Generation} *)

@@ -24,16 +24,20 @@ let fit corpus ~context =
         let counts = Hashtbl.create 1024 in 
         Seq.iter 
             (fun { Corpus.context = ctx; target } ->
-            match (Hashtbl.find_opt counts ctx) with
-            | Some row -> row
-            | None -> 
-                let row = Array.make vocab_size 0 in
-                Hashtbl.add counts ctx row;
-                row
+            let row = 
+                match (Hashtbl.find_opt counts ctx) with
+                | Some row -> row
+                | None -> 
+                    let row = Array.make vocab_size 0 in
+                    Hashtbl.add counts ctx row;
+                    row
             in 
             row.(target) <- row.(target) + 1)
             examples;
         Ok { context; vocab_size; counts }
+
+let vocab_size m = m.vocab_size
+let context_length m = m.context
 
 let count m ctx id =
   if Array.length ctx <> m.context then
@@ -47,3 +51,46 @@ let count m ctx id =
     match Hashtbl.find_opt m.counts ctx with
     | None -> 0
     | Some row -> row.(id)
+
+let predict m ctx =
+  if Array.length ctx <> m.context then
+    invalid_arg
+      (Printf.sprintf "Ngram.predict: context has length %d but the model uses %d"
+         (Array.length ctx) m.context)
+  else
+    match Hashtbl.find_opt m.counts ctx with
+    | None -> Array.make m.vocab_size (1. /. float m.vocab_size)
+    | Some row ->
+        let total = Array.fold_left ( + ) 0 row in
+        Array.map (fun c -> float c /. float total) row
+
+let sample_next m st ctx =
+  let p = predict m ctx in
+  let u = Random.State.float st 1.0 in
+  let rec go i acc =
+    if i = Array.length p - 1 then i
+    else
+      let acc' = acc +. p.(i) in
+      if u < acc' then i else go (i + 1) acc'
+  in
+  go 0 0.
+
+let generate m st ~prompt ~length = 
+    if Array.length prompt < m.context then 
+        invalid_arg
+            (Printf.sprintf "Ngram.generate: prompt length must be atleast the context length %d."
+            m.context )
+    else if length < 0 then
+        invalid_arg
+            (Printf.sprintf "Ngram.generate: length must be greater than or equal to 0 but is %d."
+            length )
+    else 
+        let out = Array.make length 0 in 
+        let ctx = ref (Array.sub prompt (Array.length prompt - m.context) m.context) in
+        for i = 0 to length - 1 do
+        let next = sample_next m st !ctx in
+        out.(i) <- next;
+        if m.context > 0 then
+            ctx := Array.append (Array.sub !ctx 1 (m.context - 1)) [| next |]
+        done;
+        out
