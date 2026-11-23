@@ -1,5 +1,5 @@
-(* AF: [{ chars; ids }] is the vocabulary in which character [chars.(i)] has
-   id [i], for each [i] in [0 .. Array.length chars - 1].
+(* AF: [{ chars; ids }] is the vocabulary in which character [chars.(i)] has id
+   [i], for each [i] in [0 .. Array.length chars - 1].
 
    RI: [chars] holds distinct characters in strictly increasing code order.
    [ids] has length 256. For every character [c], [ids.(Char.code c) = i] if

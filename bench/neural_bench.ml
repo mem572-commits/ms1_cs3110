@@ -1,15 +1,14 @@
 (* MS2 investigation for the neural model.
 
-   Part 1 times Matrix.mat_mul on square matrices of a few sizes, to see
-   whether plain OCaml arrays are fast enough for training.
+   Part 1 times Matrix.mat_mul on square matrices of a few sizes, to see whether
+   plain OCaml arrays are fast enough for training.
 
-   Part 2 trains Neural on a text file (data/sample.txt by default),
-   printing the training and validation loss as it goes, then generates
-   text from the trained model.
+   Part 2 trains Neural on a text file (data/sample.txt by default), printing
+   the training and validation loss as it goes, then generates text from the
+   trained model.
 
-   Run from the repository root:
-     dune exec bench/neural_bench.exe
-     dune exec bench/neural_bench.exe -- path/to/file.txt *)
+   Run from the repository root: dune exec bench/neural_bench.exe dune exec
+   bench/neural_bench.exe -- path/to/file.txt *)
 
 open Ocamlgpt
 
@@ -58,7 +57,8 @@ let train_on path corpus =
   Printf.printf
     "Context %d, %d training and %d validation examples, learning rate %g\n"
     context (List.length train_exs) (List.length valid_exs) learning_rate;
-  Printf.printf "Loss of a uniform guess: ln %d = %.3f\n\n" v (log (Float.of_int v));
+  Printf.printf "Loss of a uniform guess: ln %d = %.3f\n\n" v
+    (log (Float.of_int v));
   let model = Neural.create ~vocab_size:v ~context ~seed in
   let report epoch =
     Printf.printf "epoch %3d: train loss %.3f, validation loss %.3f\n" epoch
@@ -80,7 +80,8 @@ let train_on path corpus =
     Neural.generate model (Random.State.make [| seed |]) ~prompt ~length:200
   in
   Printf.printf "== 200 generated characters after %S ==\n%s%s\n"
-    (Vocab.decode vocab prompt) (Vocab.decode vocab prompt)
+    (Vocab.decode vocab prompt)
+    (Vocab.decode vocab prompt)
     (Vocab.decode vocab generated)
 
 let () =

@@ -34,8 +34,8 @@ let m2 = get_ok (Ngram.fit c ~context:2)
    unigram frequencies. In "abcabd": a=2, b=2, c=1, d=1 out of 6. *)
 let m0 = get_ok (Ngram.fit c ~context:0)
 
-(* "ababab": a=0, b=1. With context 1, a is always followed by b and b by a,
-   so every prediction is certain. *)
+(* "ababab": a=0, b=1. With context 1, a is always followed by b and b by a, so
+   every prediction is certain. *)
 let m1 = get_ok (Ngram.fit (corpus "ababab") ~context:1)
 
 (* ---------- Accessors ---------- *)
@@ -91,8 +91,8 @@ let predict_tests =
       let sum = Array.fold_left ( +. ) 0. p in
       assert_bool "sums to 1" (Float.abs (sum -. 1.) < 1e-9) );
     ( "seen context gives count frequencies" >:: fun _ ->
-        assert_equal ~printer:print_floats ~cmp:floats_close
-        [| 0.; 0.; 0.5; 0.5 |] 
+      assert_equal ~printer:print_floats ~cmp:floats_close
+        [| 0.; 0.; 0.5; 0.5 |]
         (Ngram.predict m2 [| 0; 1 |]) );
     ( "uniform prediction for unseen context" >:: fun _ ->
       let p = Ngram.predict m2 [| 1; 3 |] in
@@ -114,8 +114,8 @@ let sample_next_tests =
       [ 0; 1; 42; 3110; 99999 ]
   in
   [
-    ( "a is always followed by b" >:: fun _ -> all_seeds_give 1 [| 0 |] );
-    ( "b is always followed by a" >:: fun _ -> all_seeds_give 0 [| 1 |] );
+    ("a is always followed by b" >:: fun _ -> all_seeds_give 1 [| 0 |]);
+    ("b is always followed by a" >:: fun _ -> all_seeds_give 0 [| 1 |]);
     ( "sample_next result is a valid id" >:: fun _ ->
       let st = Random.State.make [| 3110 |] in
       for _ = 1 to 100 do
@@ -123,21 +123,24 @@ let sample_next_tests =
         assert_bool "in range" (id >= 0 && id < Ngram.vocab_size m2)
       done );
     ( "sample_next only returns ids that followed the context" >:: fun _ ->
-        let st = Random.State.make [| 3110 |] in
-        let seen = Array.make 4 0 in
-        for _ = 1 to 1000 do
-            let id = Ngram.sample_next m2 st [| 0; 1 |] in
-            seen.(id) <- seen.(id) + 1
-        done;
-        assert_equal ~printer:print_ints [| 0; 0 |] (Array.sub seen 0 2);
-        assert_bool "c and d both roughly half" (seen.(2) > 400 && seen.(3) > 400) );
+      let st = Random.State.make [| 3110 |] in
+      let seen = Array.make 4 0 in
+      for _ = 1 to 1000 do
+        let id = Ngram.sample_next m2 st [| 0; 1 |] in
+        seen.(id) <- seen.(id) + 1
+      done;
+      assert_equal ~printer:print_ints [| 0; 0 |] (Array.sub seen 0 2);
+      assert_bool "c and d both roughly half" (seen.(2) > 400 && seen.(3) > 400)
+    );
   ]
 
 (* ---------- Generation ---------- *)
 
 let generate_tests =
   let gen seed n =
-    Ngram.generate m2 (Random.State.make [| seed |]) ~prompt:[| 0; 1 |] ~length:n
+    Ngram.generate m2
+      (Random.State.make [| seed |])
+      ~prompt:[| 0; 1 |] ~length:n
   in
   [
     ( "generate returns the requested length" >:: fun _ ->
@@ -148,16 +151,21 @@ let generate_tests =
       assert_equal ~printer:print_ints (gen 3110 200) (gen 3110 200) );
     ( "generated ids are all valid" >:: fun _ ->
       assert_bool "in range"
-        (Array.for_all (fun id -> id >= 0 && id < Ngram.vocab_size m2) (gen 3110 200)) );
+        (Array.for_all
+           (fun id -> id >= 0 && id < Ngram.vocab_size m2)
+           (gen 3110 200)) );
     ( "generate uses only the last context ids of a long prompt" >:: fun _ ->
       (* Only the final a (0) should matter, so output starts with b. *)
       assert_equal ~printer:print_ints [| 1; 0; 1; 0 |]
-        (Ngram.generate m1 (Random.State.make [| 3110 |])
+        (Ngram.generate m1
+           (Random.State.make [| 3110 |])
            ~prompt:[| 1; 1; 0 |] ~length:4) );
     ( "context 0 accepts an empty prompt" >:: fun _ ->
       assert_equal ~printer:string_of_int 10
         (Array.length
-           (Ngram.generate m0 (Random.State.make [| 3110 |]) ~prompt:[||] ~length:10)) );
+           (Ngram.generate m0
+              (Random.State.make [| 3110 |])
+              ~prompt:[||] ~length:10)) );
   ]
 
 (* ---------- Properties ---------- *)
@@ -174,16 +182,20 @@ let property_tests =
   List.map
     (QCheck_ounit.to_ounit2_test ~rand:(Random.State.make [| 3110 |]))
     [
-      QCheck.Test.make ~name:"predict sums to 1 on every seen context" ~count:300
+      QCheck.Test.make ~name:"predict sums to 1 on every seen context"
+        ~count:300
         QCheck.(pair nonempty_text (int_bound 4))
         (fun input ->
           with_model input (fun c k m ->
               List.for_all
                 (fun { Corpus.context; _ } ->
-                  let sum = Array.fold_left ( +. ) 0. (Ngram.predict m context) in
+                  let sum =
+                    Array.fold_left ( +. ) 0. (Ngram.predict m context)
+                  in
                   Float.abs (sum -. 1.) < 1e-9)
                 (get_ok (Corpus.examples c ~context:k))));
-      QCheck.Test.make ~name:"counts add up to the number of examples" ~count:300
+      QCheck.Test.make ~name:"counts add up to the number of examples"
+        ~count:300
         QCheck.(pair nonempty_text (int_bound 4))
         (fun input ->
           with_model input (fun c k m ->
@@ -203,14 +215,21 @@ let property_tests =
                   0 ctxs
               in
               total = Corpus.length c - k));
-      QCheck.Test.make ~name:"generate gives in-range ids of the right length" ~count:300
+      QCheck.Test.make ~name:"generate gives in-range ids of the right length"
+        ~count:300
         QCheck.(triple nonempty_text (int_bound 4) (int_bound 50))
         (fun (s, k, n) ->
           with_model (s, k) (fun c k m ->
               let prompt = Array.sub (Corpus.ids c) 0 k in
-              let out = Ngram.generate m (Random.State.make [| 3110 |]) ~prompt ~length:n in
+              let out =
+                Ngram.generate m
+                  (Random.State.make [| 3110 |])
+                  ~prompt ~length:n
+              in
               Array.length out = n
-              && Array.for_all (fun id -> id >= 0 && id < Ngram.vocab_size m) out));
+              && Array.for_all
+                   (fun id -> id >= 0 && id < Ngram.vocab_size m)
+                   out));
     ]
 
 (* ---------- Errors ---------- *)
@@ -218,7 +237,8 @@ let property_tests =
 let error_tests =
   [
     ( "fit rejects negative context" >:: fun _ ->
-      assert_equal (Error (Corpus.Invalid_context_length (-1))) (Ngram.fit c ~context:(-1)) );
+      assert_equal (Error (Corpus.Invalid_context_length (-1)))
+        (Ngram.fit c ~context:(-1)) );
     ( "count raises invalid arg for a context that is too short" >:: fun _ ->
       raises_invalid_arg (fun () -> Ngram.count m2 [| 0 |] 1) );
     ( "count raises invalid arg for a context that is too long" >:: fun _ ->
@@ -226,17 +246,23 @@ let error_tests =
     ( "count raises invalid arg for id = -1" >:: fun _ ->
       raises_invalid_arg (fun () -> Ngram.count m2 [| 0; 1 |] (-1)) );
     ( "count raises invalid arg for id = vocab_size" >:: fun _ ->
-      raises_invalid_arg (fun () -> Ngram.count m2 [| 0; 1 |] (Ngram.vocab_size m2)) );
+      raises_invalid_arg (fun () ->
+          Ngram.count m2 [| 0; 1 |] (Ngram.vocab_size m2)) );
     ( "predict raises invalid arg for a context that is too short" >:: fun _ ->
       raises_invalid_arg (fun () -> Ngram.predict m2 [| 0 |]) );
     ( "predict raises invalid arg for a context that is too long" >:: fun _ ->
       raises_invalid_arg (fun () -> Ngram.predict m2 [| 0; 1; 2 |]) );
-    ( "generate raises invalid arg if prompt is shorter than the context" >:: fun _ ->
+    ( "generate raises invalid arg if prompt is shorter than the context"
+    >:: fun _ ->
       raises_invalid_arg (fun () ->
-          Ngram.generate m2 (Random.State.make [| 3110 |]) ~prompt:[| 0 |] ~length:10) );
+          Ngram.generate m2
+            (Random.State.make [| 3110 |])
+            ~prompt:[| 0 |] ~length:10) );
     ( "generate raises invalid arg if length is negative" >:: fun _ ->
       raises_invalid_arg (fun () ->
-          Ngram.generate m2 (Random.State.make [| 3110 |]) ~prompt:[| 0; 1 |] ~length:(-1)) );
+          Ngram.generate m2
+            (Random.State.make [| 3110 |])
+            ~prompt:[| 0; 1 |] ~length:(-1)) );
   ]
 
 let () =
