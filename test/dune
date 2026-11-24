@@ -1,5 +1,7 @@
 (tests
- (names test_ocamlgpt test_neural test_ngram)
+ (names test_ocamlgpt test_neural test_ngram test_cli)
  (libraries ocamlgpt ounit2 qcheck-core qcheck-ounit)
  (deps
-  (glob_files fixtures/*)))
+  (glob_files fixtures/*)
+  %{project_root}/data/sample.txt
+  %{project_root}/bin/main.exe))
